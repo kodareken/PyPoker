@@ -1,0 +1,31 @@
+{
+  "seats": [
+    {
+      "name": "1",
+      "position": [100, 100],
+      "area": {
+        "x": 100,
+        "y": 100,
+        "x_start": 98,
+        "y_start": 98,
+        "x_end": 103,
+        "y_end": 103
+      }
+    }
+  ],
+  "card_areas": {
+    "hole_cards": {
+      "x": 200,
+      "y": 200,
+      "width": 80,
+      "height": 83
+    },
+    "community_cards": {
+      "x": 300,
+      "y": 300,
+      "width": 274,
+      "height": 83
+    }
+  },
+  "seat_color": [99, 146, 145]
+}

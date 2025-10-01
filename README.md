@@ -29,6 +29,40 @@ PyPoker is a blazing-fast poker analysis tool that automatically detects opponen
 
 <img width="1170" height="656" alt="winprob" src="https://github.com/user-attachments/assets/ef0978be-76ea-4714-a485-f78d23d53128" />
 
+## 🛠️ Technology Stack
+
+This project utilizes a modern, data-centric technology stack:
+
+- **Programming Language**: **Python 3.8+**
+- **Data Processing & Simulation**: Custom Python implementation for Monte Carlo simulation
+- **AI & Machine Learning**: **Anthropic Claude Haiku** vision API for card recognition
+- **Cloud Services**: Leverages cloud-based AI for real-time analysis
+- **Development Practices**: Includes support for both GUI and headless (scripted) operation, demonstrating flexible software design.
+
+## 🧠 Data Pipeline (ETL)
+
+The project follows a classic Extract-Transform-Load (ETL) pattern to process data from the screen and deliver actionable insights.
+
+### 1. Extract
+- **Player Status**: Pixel data is extracted from predefined screen locations to determine if a player is active in the hand.
+- **Card Images**: Screenshots of the player's hole cards and the community cards are captured.
+
+### 2. Transform
+- **Player Count**: The raw pixel data is transformed into a simple count of active opponents.
+- **Card Recognition**: The captured images are sent to the Claude Haiku vision API, which transforms the image data into structured text-based card notation (e.g., "Ah Kh").
+- **Equity Calculation**: The structured card data is fed into a high-performance Monte Carlo simulation, which runs 100,000 iterations to transform the game state into a precise win probability.
+
+### 3. Load
+- **Real-time Display**: The final win probability is loaded into a user-friendly GUI popup, providing immediate feedback.
+- **Database Logging**: Each analysis result is saved to a SQLite database (`poker_analysis.db`) for historical analysis.
+
+## 📈 Business Applications
+
+While designed for practice, this project demonstrates key principles applicable to real-world business challenges:
+
+- **Data-Driven Decision Making**: Provides real-time data to support player decisions, mirroring how businesses use data to inform strategy.
+- **Performance Analysis**: By logging results to a database, a player can analyze their performance over time, identify weaknesses, and track improvement—similar to business performance monitoring.
+- **Strategic Simulation**: The Monte Carlo simulation is a powerful technique used across industries (finance, logistics, etc.) to model outcomes and manage risk.
 
 ## 🧪 Test it with PokerTH
 
@@ -178,7 +212,39 @@ PyPoker/
 │   ├── hand.png             # Hole cards screenshot
 │   └── board.png            # Community cards screenshot
 ├── debug.txt                 # Analysis debug log
+├── poker_analysis.db         # SQLite database for results
 └── requirements.txt          # Python dependencies
+```
+
+## 🗄️ Database Schema
+
+Analysis results are stored in a SQLite database file named `poker_analysis.db`.
+
+### `analysis_results` table
+
+| Column                | Type    | Description                               |
+|-----------------------|---------|-------------------------------------------|
+| `id`                  | INTEGER | Primary Key                               |
+| `timestamp`           | TEXT    | ISO 8601 timestamp of the analysis        |
+| `player_hand`         | TEXT    | Player's hole cards (e.g., "As Ks")       |
+| `community_cards`     | TEXT    | Community cards on the board (e.g., "Qd Jd Td") |
+| `active_opponents`    | INTEGER | Number of active opponents                |
+| `win_probability_pct` | REAL    | Calculated win probability (e.g., 85.3)   |
+
+### Example Queries
+
+You can query the database using any standard SQLite tool.
+
+**Get the last 10 results:**
+```sql
+SELECT * FROM analysis_results ORDER BY id DESC LIMIT 10;
+```
+
+**Calculate average win probability with pocket Aces:**
+```sql
+SELECT AVG(win_probability_pct)
+FROM analysis_results
+WHERE player_hand LIKE '%A%A%';
 ```
 
 ## 🎮 Configuration File
@@ -250,27 +316,6 @@ rm ~/.poker_monitor.lock
 - Click "Check Seats" to test detection
 - Reconfigure seat color using "Pick Color from Screen"
 - Check `debug.txt` for detailed seat detection logs
-
-## 🧠 How It Works
-
-### 1. Player Detection (Pixel Scanning)
-- Monitors 5x5 pixel areas at each seat position
-- Matches RGB color with configured tolerance (10%)
-- Detects active/inactive players in ~50ms
-
-### 2. Card Recognition (AI Vision)
-- Captures screenshots of card areas
-- Sends to Claude Haiku vision API (2 parallel calls)
-- Optimized prompt for fast, accurate card notation
-- Handles "10" → "T" conversion automatically
-- Recognition time: ~600ms for both hand and board
-
-### 3. Equity Calculation (Monte Carlo)
-- Fast Python-based Monte Carlo simulator
-- 100,000 iterations in ~1.5 seconds
-- Accuracy: ±0.15% from true equity
-- Simulates random opponent hands and runouts
-- Returns win probability percentage
 
 ## 🤝 Contributing
 

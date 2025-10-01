@@ -12,7 +12,8 @@ This script:
 3. Captures card screenshots
 4. Recognizes cards with AI (2 parallel Haiku calls)
 5. Calculates win probability (Monte Carlo)
-6. Displays result in popup window
+6. Saves the result to a SQLite database
+7. Displays result in a popup window
 
 Perfect for keyboard shortcut automation!
 """
@@ -22,8 +23,12 @@ from PIL import ImageGrab
 import json
 import os
 import sys
+import sqlite3
 from datetime import datetime
 from poker_ai import PokerAI
+
+
+DB_FILE = "poker_analysis.db"
 
 
 class WinProbabilityPopup:
@@ -163,16 +168,64 @@ def initialize_debug_log():
         print(f"ERROR: Failed to initialize debug log: {e}")
 
 
+def setup_database():
+    """Initialize the SQLite database and create the results table if it doesn't exist."""
+    conn = None
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS analysis_results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                player_hand TEXT NOT NULL,
+                community_cards TEXT,
+                active_opponents INTEGER NOT NULL,
+                win_probability_pct REAL NOT NULL
+            );
+        """)
+        conn.commit()
+        return conn
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        if conn:
+            conn.close()
+        sys.exit(1)
+
+
+def save_analysis_result(conn, player_hand, community_cards, active_opponents, win_probability):
+    """Save a single analysis result to the database."""
+    try:
+        # Extract float from percentage string (e.g., "55.3%")
+        prob_pct = float(win_probability.strip('%'))
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO analysis_results (timestamp, player_hand, community_cards, active_opponents, win_probability_pct)
+            VALUES (?, ?, ?, ?, ?)
+        """, (datetime.now().isoformat(), player_hand, community_cards, active_opponents, prob_pct))
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"Failed to save result to database: {e}")
+    except (ValueError, TypeError) as e:
+        print(f"Could not parse win probability for database insertion: {e}")
+
+
 def main():
     # Initialize debug log for this run
     initialize_debug_log()
+
+    # Setup database
+    print("\n[*] Setting up database...")
+    conn = setup_database()
+    print("✓ Database ready.")
 
     print("=" * 60)
     print("POKER AI ANALYSIS - HEADLESS MODE")
     print("=" * 60)
 
     # Load configuration
-    print("\n[1/5] Loading configuration...")
+    print("\n[1/6] Loading configuration...")
     config = load_config()
 
     seats = config.get("seats", [])
@@ -183,11 +236,15 @@ def main():
     if not configured_seats:
         print("ERROR: No seats configured!")
         print("Please run poker_seat_monitor.py to set up seat positions.")
+        if conn:
+            conn.close()
         sys.exit(1)
 
     if not card_areas.get("hole_cards"):
         print("ERROR: Hole cards area not configured!")
         print("Please run poker_seat_monitor.py to set up card areas.")
+        if conn:
+            conn.close()
         sys.exit(1)
 
     print(f"✓ Loaded {len(configured_seats)} seats")
@@ -195,7 +252,7 @@ def main():
     print(f"✓ Community cards area: {'configured' if card_areas.get('community_cards') else 'not set (pre-flop)'}")
 
     # Detect active players
-    print("\n[2/5] Detecting active players...")
+    print("\n[2/6] Detecting active players...")
 
     # Load seat color from config (don't hardcode!)
     seat_color_list = config.get("seat_color", [149, 73, 70])
@@ -229,12 +286,14 @@ def main():
     print(f"✓ Active opponents detected: {active_opponents}")
 
     # Capture screenshots
-    print("\n[3/5] Capturing card screenshots...")
+    print("\n[3/6] Capturing card screenshots...")
     if not os.path.exists("imgs"):
         os.makedirs("imgs")
 
     if not save_card_screenshot(card_areas["hole_cards"], "hand.png"):
         print("ERROR: Failed to capture hole cards!")
+        if conn:
+            conn.close()
         sys.exit(1)
     print("✓ Hole cards captured")
 
@@ -243,7 +302,7 @@ def main():
         print("✓ Community cards captured")
 
     # Recognize cards with AI
-    print("\n[4/5] Recognizing cards (AI - 2 parallel calls)...")
+    print("\n[4/6] Recognizing cards (AI - 2 parallel calls)...")
     ai = PokerAI()
 
     hand_path = "imgs/hand.png"
@@ -253,6 +312,8 @@ def main():
 
     if not player_hand:
         print("ERROR: Failed to recognize hole cards!")
+        if conn:
+            conn.close()
         sys.exit(1)
 
     print(f"✓ Player hand: {player_hand}")
@@ -265,7 +326,7 @@ def main():
         print("✓ Community cards: None (pre-flop)")
 
     # Calculate win probability
-    print("\n[5/5] Calculating win probability (Monte Carlo 100k iterations)...")
+    print("\n[5/6] Calculating win probability (Monte Carlo 100k iterations)...")
     win_probability = ai.calculate_win_probability(
         player_hand=player_hand,
         community_cards=community_cards,
@@ -274,9 +335,16 @@ def main():
 
     if not win_probability:
         print("ERROR: Failed to calculate win probability!")
+        if conn:
+            conn.close()
         sys.exit(1)
 
     print(f"✓ Win probability: {win_probability}")
+
+    # Save result to database
+    print("\n[6/6] Saving result to database...")
+    save_analysis_result(conn, player_hand, community_cards, active_opponents, win_probability)
+    print("✓ Result saved.")
 
     # Display result
     print("\n" + "=" * 60)
@@ -295,6 +363,9 @@ def main():
     root.withdraw()  # Hide the main window
 
     popup = WinProbabilityPopup(root, win_probability, duration=5)
+
+    if conn:
+        conn.close()
 
     root.mainloop()
 
