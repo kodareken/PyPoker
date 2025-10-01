@@ -1,4 +1,4 @@
-# PyPoker - AI-Powered Texas Hold'em Assistant 🎰🤖
+# PyPoker - Texas Hold'em Assistant 🎰🤖
 
 **Real-time poker odds calculator with AI-powered card recognition and Monte Carlo simulation**
 
