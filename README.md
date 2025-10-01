@@ -4,6 +4,10 @@
 
 PyPoker is a blazing-fast poker analysis tool that automatically detects opponents, recognizes cards using AI vision, and calculates your win probability in under 2 seconds. Perfect for practicing poker strategy and understanding equity in real-time.
 
+
+<img width="1170" height="416" alt="setup" src="https://github.com/user-attachments/assets/91f0bae5-6675-46bb-8e0c-597d1d03a79e" />
+
+
 ## ✨ Features
 
 - **🎯 Player Detection**: Automatically detects active opponents at the poker table
@@ -21,6 +25,10 @@ PyPoker is a blazing-fast poker analysis tool that automatically detects opponen
 | Card recognition (2 parallel calls) | ~600ms | 99%+ (Haiku vision) |
 | Monte Carlo simulation (100k iterations) | ~1.5s | ±0.15% |
 | **Total end-to-end** | **~2.1s** | **Excellent** |
+
+
+<img width="1170" height="656" alt="winprob" src="https://github.com/user-attachments/assets/ef0978be-76ea-4714-a485-f78d23d53128" />
+
 
 ## 🧪 Test it with PokerTH
 
