@@ -2,7 +2,7 @@
 
 **Real-time poker odds calculator with AI-powered card recognition and Monte Carlo simulation**
 
-PyPoker is a blazing-fast poker analysis tool that automatically detects opponents, recognizes cards using AI vision, and calculates your win probability in under 2 seconds. Perfect for practicing poker strategy and understanding equity in real-time.
+PyPoker demonstrates a fast poker analysis tool automatically detects opponents after setup through its UI, recognizes cards using AI vision, and calculates your win probability in under 2 seconds.
 
 
 <img width="1170" height="416" alt="setup" src="https://github.com/user-attachments/assets/91f0bae5-6675-46bb-8e0c-597d1d03a79e" />
