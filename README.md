@@ -7,6 +7,7 @@ PyPoker demonstrates a fast poker analysis tool automatically detects opponents 
 
 <img width="1170" height="416" alt="setup" src="https://github.com/user-attachments/assets/91f0bae5-6675-46bb-8e0c-597d1d03a79e" />
 
+[Demo Video Youtube](https://www.youtube.com/watch?v=LlkSsNT-uZI)
 
 ## ✨ Features
 
